@@ -1,18 +1,50 @@
 from flask import Flask
-from application.routes import index, user
+from application.views import Index, User, Comics
 
 
 def create_app():
     app = Flask(__name__)
 
-    app.add_url_rule("/", view_func=index.Index.as_view("index"))
-    
-    app.add_url_rule("/searchComics", view_func=index.Index.as_view("index"))
+    # INDEX
+    app.add_url_rule(
+        rule="/",
+        methods=['GET'],
+        view_func=Index.Index.as_view("index")
+    )
 
-    app.add_url_rule("/users", view_func=index.Index.as_view("index"))
+    # Search Marvel Comics
+    app.add_url_rule(
+        rule="/searchComics",
+        methods=['GET'],
+        view_func=Comics.SearchComic.as_view("searchComics")
+    )
 
-    app.add_url_rule("/addToLayaway", view_func=index.Index.as_view("index"))
+    # Register and check profile user
+    app.add_url_rule(
+        rule="/users",
+        methods=['GET', 'POST'],
+        view_func=User.Index.as_view("users")
+    )
 
-    app.add_url_rule("/getLayawayList", view_func=index.Index.as_view("index"))
+    # Login
+    app.add_url_rule(
+        rule="/users/login",
+        methods=['POST'],
+        view_func=User.Index.as_view("usersLogin")
+    )
+
+    # Assign comics to an user
+    app.add_url_rule(
+        rule="/addToLayaway",
+        methods=['GET'],
+        view_func=Comics.AsignComic.as_view("addToLayaway")
+    )
+
+    # View assigned comics
+    app.add_url_rule(
+        rule="/getLayawayList",
+        methods=['GET'],
+        view_func=Comics.ViewAssignedComics.as_view("getLayawayList")
+    )
 
     return app
