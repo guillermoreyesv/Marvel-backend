@@ -100,3 +100,34 @@ class User():
         datetime_difference = now - birthday
         age = int(datetime_difference.days/365)
         return age
+
+    def validate_token(token):
+        from application.config.db import mongo
+        from application import app
+
+        results = None
+
+        if not token:
+            return results
+
+        start_with_bearer = token.startswith('Bearer ')
+
+        if not start_with_bearer:
+            app.logger.error(f'User.ManageUser.get.bearer_token {token}')
+            return results
+
+        token = token[7:]
+
+        # Get users collection
+        try:
+            user_collection = mongo.db.users
+        except Exception as e:
+            app.logger.error(f'User.ManageUser.get.mongo_error.collection {e}')
+            return results
+
+        # Find user by token
+        results = user_collection.find_one({'access_token': token})
+        if not results:
+            app.logger.error(f'User.ManageUser.get.mongo_error {token}')
+
+        return results

@@ -5,46 +5,15 @@ from flask import request
 class ManageUser(MethodView):
     # Check Profile
     def get(self):
-        from application.config.db import mongo
         from application import app
         from application.utils.user import User
+
+        # Get Bearer Token
         authorization = request.headers.get('Authorization')
-        if not authorization:
-            response = {
-                'code': 401,
-                'status': 'error',
-                'message': 'Not a valid token.'
-            }
-            return response, response['code']
-            
-        start_with_bearer = authorization.startswith('Bearer ')
-        
-        if not start_with_bearer:
-            response = {
-                'code': 401,
-                'status': 'error',
-                'message': 'Not a valid token.'
-            }
-            return response, response['code']
-        
-        token = authorization[7:]
 
-        # Get users collection
-        try:
-            user_collection = mongo.db.users
-        except Exception as e:
-            app.logger.error(f'User.ManageUser.get.mongo_error.collection {e}')
-            response = {
-                'code': 500,
-                'status': 'error',
-                'message': 'Server error.'
-            }
-            return response, response['code']
-
-        # Find user by token
-        results = user_collection.find_one({'access_token': token})
-        if not results:
-            app.logger.error(f'User.ManageUser.get.mongo_error.notResults {authorization}')
+        # Validate Token
+        info_user = User.validate_token(authorization)
+        if info_user is None:
             response = {
                 'code': 401,
                 'status': 'error',
@@ -52,14 +21,15 @@ class ManageUser(MethodView):
             }
             return response, response['code']
 
-        age = User.get_age(results['birthday'])
+        # Preparing profile
+        age = User.get_age(info_user['birthday'])
         response = {
-            'id': str(results.get('_id')),
-            'name': results.get('name'),
+            'id': str(info_user.get('_id')),
+            'name': info_user.get('name'),
             'age': age,
-            'token': results.get('access_token')
+            'token': info_user.get('access_token')
         }
-        app.logger.warning(f'User.ManageUser.post {response}')
+        app.logger.debug(f'User.ManageUser.post {response}')
         return response, 200
 
     # Register User
@@ -232,3 +202,13 @@ class Login(MethodView):
             }
             app.logger.error(f'User.Login.post {response}')
         return response, response['code']
+
+
+class AsignComic(MethodView):
+    def post(self):
+        return 'assigned'
+
+
+class ViewAssignedComics(MethodView):
+    def get(self):
+        return 'comics'

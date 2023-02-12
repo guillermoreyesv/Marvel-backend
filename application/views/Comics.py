@@ -40,13 +40,3 @@ class SearchComic(MethodView):
             )
 
         return response_dict
-
-
-class AsignComic(MethodView):
-    def post(self):
-        return 'assigned'
-
-
-class ViewAssignedComics(MethodView):
-    def get(self):
-        return 'comics'

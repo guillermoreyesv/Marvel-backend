@@ -55,12 +55,12 @@ app.add_url_rule(
 app.add_url_rule(
     rule='/addToLayaway',
     methods=['POST'],
-    view_func=Comics.AsignComic.as_view('addToLayaway')
+    view_func=User.AsignComic.as_view('addToLayaway')
 )
 
 # View assigned comics
 app.add_url_rule(
     rule='/getLayawayList',
     methods=['GET'],
-    view_func=Comics.ViewAssignedComics.as_view('getLayawayList')
+    view_func=User.ViewAssignedComics.as_view('getLayawayList')
 )
