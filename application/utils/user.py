@@ -28,6 +28,7 @@ class User():
         return date
 
     def custom_validations(params):
+        from application import app
         # Clone dict values into a new one
         new_params = params.copy()
         # Remove password value in new dictionary
@@ -70,7 +71,7 @@ class User():
         try:
             User.transform_date(params['birthday'])
         except Exception as e:
-            print('Birthday Date error', params['birthday'], e)
+            app.logger.debug(f'user.User.custom_validations {e}')
             response['message'] = 'Birthday format mismatch. YYYY-MM-DD (ISO 8601)'
             response['status'] = 'error'
             response['code'] = 400
@@ -91,3 +92,11 @@ class User():
             'message': 'valid information'
         }
         return response
+
+    def get_age(date):
+        from datetime import datetime
+        birthday = datetime.strptime(date, '%Y-%m-%d')
+        now = datetime.now()
+        datetime_difference = now - birthday
+        age = int(datetime_difference.days/365)
+        return age

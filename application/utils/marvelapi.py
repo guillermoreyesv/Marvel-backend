@@ -8,6 +8,7 @@ class MarvelAPI():
         return 'ok'
 
     def get_hash(timestamp=None):
+        from application import app
         try:
             public_key = os.getenv('MARVEL_PUBLICKEY').encode()
             private_key = os.getenv('MARVEL_PRIVATEKEY').encode()
@@ -19,7 +20,7 @@ class MarvelAPI():
 
             return hash_md5.hexdigest()
         except Exception as e:
-            print('Failed to generate marvel hash', e)
+            app.logger.error(f'MarvelAPI.get_hash {e}')
             exit()
 
     def get_url(endpoint='', params='', order_by=''):
@@ -43,12 +44,13 @@ class MarvelAPI():
 
     def make_request(endpoint='', params='', order_by=''):
         import requests
+        from application import app
         url = MarvelAPI.get_url(
             endpoint=endpoint,
             params=params,
             order_by=order_by)
 
-        print(url)
+        app.logger.debug(f'MarvelAPI.make_request {url}')
         payload = {}
         headers = {}
 
