@@ -52,4 +52,4 @@ class MarvelAPI():
         payload = {}
         headers = {}
 
-        return requests.request("GET", url, headers=headers, data=payload)
+        return requests.request('GET', url, headers=headers, data=payload)

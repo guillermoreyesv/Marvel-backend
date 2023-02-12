@@ -18,8 +18,8 @@ class SearchComic(MethodView):
         list_comics = ['comic', 'comics']
 
         # Get params
-        keyword_param = request.args.get(key="keyword", default='')
-        type_param = request.args.get(key="type", default='')
+        keyword_param = request.args.get(key='keyword', default='')
+        type_param = request.args.get(key='type', default='')
 
         # Get Characters
         if type_param in list_characters or not type_param:

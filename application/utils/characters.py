@@ -18,14 +18,14 @@ class Characters():
             image = Characters.get_image(result['thumbnail'])
 
             response_characters.append({
-                "id": result['id'],
-                "name": result['name'],
-                "image": image,
-                "appearances": result['comics']['available']
+                'id': result['id'],
+                'name': result['name'],
+                'image': image,
+                'appearances': result['comics']['available']
             })
         return response_characters
 
     def get_image(result={}):
         path = result['path']
         extension = result['extension']
-        return f"{path}.{extension}"
+        return f'{path}.{extension}'
