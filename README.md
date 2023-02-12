@@ -36,17 +36,27 @@ docker build -t marvel-backend .
 
 6. Run the container:
 ```bash
-docker run -d -p 5000:5000 --name marvel-container marvel-image
+docker run -d -p 5000:5000 --name marvel-container marvel-backend
 ```
 
 ### In local
 
-5. Install the required packages:
+5. Start a virtualenv:
+```python
+py -m venv .python-version
+```
+
+6. Activate virtualenv:
+```bash
+.\.python-version\Scripts\Activate.ps1
+```
+
+7. Install the required packages:
 ```python
 pip install --no-cache-dir -r requirements.txt
 ```
 
-6. Start the application:
+8. Start the application:
 ```bash
 python run.py
 ```
