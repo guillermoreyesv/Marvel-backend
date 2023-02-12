@@ -36,7 +36,7 @@ def create_app():
     # Assign comics to an user
     app.add_url_rule(
         rule="/addToLayaway",
-        methods=['GET'],
+        methods=['POST'],
         view_func=Comics.AsignComic.as_view("addToLayaway")
     )
 
