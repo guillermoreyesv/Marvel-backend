@@ -1,0 +1,93 @@
+class User():
+    def __init__():
+        return 'ok'
+
+    def check_email(email=''):
+        import re
+        response = {
+            'status': False,
+            'email': email
+        }
+        email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+        if re.match(email_regex, email):
+            response['status'] = True
+        return response
+
+    def hash_password(password=''):
+        import hashlib
+
+        hash_md5 = hashlib.md5()
+        hash_md5.update(password.encode())
+
+        return hash_md5.hexdigest()
+
+    def transform_date(date=''):
+        from datetime import datetime
+        date = date.strip()
+        datetime.strptime(date, '%Y-%m-%d')
+        return date
+
+    def custom_validations(params):
+        # Clone dict values into a new one
+        new_params = params.copy()
+        # Remove password value in new dictionary
+        if params.get('password'):
+            new_params.pop('password')
+
+        # Default response if any goes wrong
+        response = {
+            'code': 500,
+            'status': 'error',
+            'message': 'api error',
+            'params': new_params
+        }
+
+        if not params.get('email'):
+            response['message'] = 'Missing email.'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        if not params.get('password'):
+            response['message'] = 'Missing password.'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        if not params.get('name'):
+            response['message'] = 'Missing name.'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        if not params.get('birthday'):
+            response['message'] = 'Missing birthday.'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        # Checking birthday date format
+        try:
+            User.transform_date(params['birthday'])
+        except Exception as e:
+            print('Birthday Date error', params['birthday'], e)
+            response['message'] = 'Birthday format mismatch. YYYY-MM-DD (ISO 8601)'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        # Checking email
+        response_email = User.check_email(email=params['email'])
+        if response_email['status'] is False:
+            response['message'] = 'Email format mismatch.'
+            response['status'] = 'error'
+            response['code'] = 400
+            return response
+
+        # ALL OK
+        response = {
+            'code': 200,
+            'status': 'ok',
+            'message': 'valid information'
+        }
+        return response

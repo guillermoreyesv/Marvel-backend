@@ -1,10 +1,8 @@
-from application import create_app
+from application import app
 from dotenv import load_dotenv
 import os
 
 load_dotenv('.env')
-
-app = create_app()
 
 if __name__ == "__main__":
     host = os.getenv('FLASK_HOST')
