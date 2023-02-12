@@ -19,10 +19,10 @@ class Comics():
             image = Comics.get_comic_image(result['images'])
 
             response_characters.append({
-                "id": result['id'],
-                "title": result['title'],
-                "image": image,
-                "onSaleDate": on_sale_date
+                'id': result['id'],
+                'title': result['title'],
+                'image': image,
+                'onSaleDate': on_sale_date
             })
 
         return response_characters

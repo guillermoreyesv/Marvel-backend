@@ -11,9 +11,13 @@ class ManageUser(MethodView):
     def post(self):
         from application.utils.user import User
         from application.config.db import mongo
+        from application.utils.request import Request
+        from application import app
 
         # Params Dict
-        params_received = request.get_json()
+        status, params_received = Request.get_json(request)
+        if not status:
+            return params_received, params_received['code']
 
         # Check information
         response_validation = User.custom_validations(params_received)
@@ -40,7 +44,16 @@ class ManageUser(MethodView):
         }
 
         # Get users collection
-        user_collection = mongo.db.users
+        try:
+            user_collection = mongo.db.users
+        except Exception as e:
+            app.logger.error(f'User.ManageUser.post.mongo_error {e}')
+            response = {
+                'code': 500,
+                'status': 'error',
+                'message': 'Server error.'
+            }
+            return response, response['code']
 
         # Check if user is already register
         results = user_collection.find_one({'email': email})
@@ -52,6 +65,7 @@ class ManageUser(MethodView):
                 'message': 'User is already registered',
                 'params': user_dict
             }
+            app.logger.warning(f'User.ManageUser.post {response}')
             return response, response['code']
 
         # Save document
@@ -69,6 +83,7 @@ class ManageUser(MethodView):
                 'message': 'User has been registered',
                 'params': user_dict
             }
+            app.logger.debug(f'User.ManageUser.post {response}')
         else:
             response = {
                 'code': 500,
@@ -104,6 +119,7 @@ class Login(MethodView):
                 'status': 'failed',
                 'message': 'User or password empty.'
             }
+            app.logger.warning(f'User.Login.post params:{params_received} response:{response}')
             return response, response['code']
 
         # Hash password
@@ -113,7 +129,7 @@ class Login(MethodView):
         try:
             user_collection = mongo.db.users
         except Exception as e:
-            app.logger.error("mongo_error", e)
+            app.logger.error('User.Login.post.mongo_error', e)
             response = {
                 'code': 500,
                 'status': 'error',
@@ -132,6 +148,7 @@ class Login(MethodView):
                 'status': 'failed',
                 'message': 'User not found or password incorrect.'
             }
+            app.logger.warning(f'User.Login.post params:{params_received} response:{response}')
             return response, response['code']
 
         # Create the access token
@@ -144,18 +161,19 @@ class Login(MethodView):
 
         # Check result
         if result.acknowledged:
-            app.logger.debug("user_token_updated", email, result)
-
             response = {
-                "token": access_token,
-                "code": 200,
-                "message": "ok"
+                'token': access_token,
+                'email': email,
+                'code': 200,
+                'message': 'ok'
             }
+            app.logger.debug(f'User.Login.post {response}')
 
         else:
-            app.logger.error("user_token_not_updated", email, result)
             response = {
-                "code": 500,
-                "message": "Server error"
+                'code': 500,
+                'email': email,
+                'message': 'Server error'
             }
+            app.logger.error(f'User.Login.post {response}')
         return response, response['code']
