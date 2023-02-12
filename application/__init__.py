@@ -1,10 +1,15 @@
 from flask import Flask
 from application.views import Index, User, Comics
 from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager
+import os
+
 
 app = Flask(__name__)
 load_dotenv()
 
+app.config['JWT_SECRET_KEY'] = os.getenv('SECRET_KEY')
+jwt = JWTManager(app)
 
 # INDEX
 app.add_url_rule(

@@ -83,4 +83,79 @@ class ManageUser(MethodView):
 
 class Login(MethodView):
     def post(self):
-        return 'test'
+        from application.utils.user import User
+        from application.config.db import mongo
+        from application.utils.request import Request
+        from flask_jwt_extended import create_access_token
+        from application import app
+
+        # Params Dict
+        status, params_received = Request.get_json(request)
+        if not status:
+            return params_received, params_received['code']
+
+        email = params_received.get('email', '').strip().lower()
+        password = params_received.get('password', '').strip()
+
+        # Check email and password length
+        if len(email) == 0 or len(password) == 0:
+            response = {
+                'code': 400,
+                'status': 'failed',
+                'message': 'User or password empty.'
+            }
+            return response, response['code']
+
+        # Hash password
+        hashed_password = User.hash_password(password=password)
+
+        # Get users collection
+        try:
+            user_collection = mongo.db.users
+        except Exception as e:
+            app.logger.error("mongo_error", e)
+            response = {
+                'code': 500,
+                'status': 'error',
+                'message': 'Server error.'
+            }
+            return response, response['code']
+
+        # Find user document
+        dict_to_find = {'email': email, 'password': hashed_password}
+        user = user_collection.find_one(dict_to_find)
+
+        # If not found document
+        if not user:
+            response = {
+                'code': 404,
+                'status': 'failed',
+                'message': 'User not found or password incorrect.'
+            }
+            return response, response['code']
+
+        # Create the access token
+        access_token = create_access_token(identity=email)
+
+        # Save token
+        dict_to_match = {'_id': user['_id']}
+        dict_to_update = {'$set': {'access_token': access_token}}
+        result = user_collection.update_one(dict_to_match, dict_to_update)
+
+        # Check result
+        if result.acknowledged:
+            app.logger.debug("user_token_updated", email, result)
+
+            response = {
+                "token": access_token,
+                "code": 200,
+                "message": "ok"
+            }
+
+        else:
+            app.logger.error("user_token_not_updated", email, result)
+            response = {
+                "code": 500,
+                "message": "Server error"
+            }
+        return response, response['code']
