@@ -9,11 +9,17 @@ class ManageUser(MethodView):
         from application import app
         from application.utils.user import User
         authorization = request.headers.get('Authorization')
-        exist_authorization = authorization
+        if not authorization:
+            response = {
+                'code': 401,
+                'status': 'error',
+                'message': 'Not a valid token.'
+            }
+            return response, response['code']
+            
         start_with_bearer = authorization.startswith('Bearer ')
         
-        token_rules = exist_authorization and start_with_bearer
-        if not token_rules:
+        if not start_with_bearer:
             response = {
                 'code': 401,
                 'status': 'error',
