@@ -206,7 +206,83 @@ class Login(MethodView):
 
 class AsignComic(MethodView):
     def post(self):
-        return 'assigned'
+        from application import app
+        from application.utils.user import User
+        from application.utils.request import Request
+        from application.utils.comics import Comics
+
+        # Get Bearer Token
+        authorization = request.headers.get('Authorization')
+
+        # Validate Token
+        info_user, user_collection = User.validate_token(authorization)
+        if info_user is None:
+            response = {
+                'code': 401,
+                'status': 'error',
+                'message': 'Not a valid token.'
+            }
+            return response, response['code']
+
+        # Params Dict
+        status, params_received = Request.get_json(request)
+        if not status:
+            return params_received, params_received['code']
+
+        # Comics
+        comics_list = params_received.get('comics_list', [])
+
+        # Sanitize Comics
+        comic_list_cleaned = []
+        try:
+            for comic_id in comics_list:
+                # Only accept Marvels Comics ids
+                comic_id_int = int(comic_id)
+                Comics.get_comics_by_id(id=comic_id_int)
+                comic_list_cleaned.append(comic_id_int)
+        except Exception as e:
+            response = {
+                'code': 400,
+                'comic_list': comics_list,
+                'message': str(e)
+            }
+            app.logger.error('User.Login.post', e)
+            return response, response['code']
+
+        # Save token
+        dict_to_match = {'_id': info_user['_id']}
+        dict_to_update = {
+            '$addToSet': {
+                'comics_layaway': {
+                    '$each': comic_list_cleaned
+                    }
+                }
+            }
+        result = user_collection.update_one(dict_to_match, dict_to_update)
+
+        # Check result
+        if result.acknowledged and result.modified_count:
+            response = {
+                'comic_list': comics_list,
+                'code': 201,
+                'message': 'Comics layawayed'
+            }
+            app.logger.debug(f'User.Login.post {response}')
+        elif result.modified_count == 0:
+            response = {
+                'code': 200,
+                'comic_list': comics_list,
+                'message': 'Comics already layawayed'
+            }
+            app.logger.debug(f'User.Login.post {response}')
+        else:
+            response = {
+                'code': 500,
+                'comic_list': comics_list,
+                'message': 'Server error'
+            }
+            app.logger.error(f'User.Login.post {response}')
+        return response, response['code']
 
 
 class ViewAssignedComics(MethodView):
