@@ -53,5 +53,25 @@ class MarvelAPI():
         app.logger.debug(f'MarvelAPI.make_request {url}')
         payload = {}
         headers = {}
+        try:
+            response = requests.request(
+                method='GET',
+                url=url,
+                headers=headers,
+                data=payload,
+                timeout=10
+            )
+        except Exception as error:
+            app.logger.error('MarvelAPI.make_request', error)
+            raise Exception('Request error')
 
-        return requests.request('GET', url, headers=headers, data=payload)
+        if 400 <= response.status_code < 500:
+            app.logger.warning('MarvelAPI.make_request', response.status_code)
+            raise Exception('Marvel data not found')
+
+        elif 500 <= response.status_code < 600:
+            app.logger.warning('MarvelAPI.make_request', response.status_code)
+            raise Exception('Marvel API not working')
+
+        app.logger.debug('MarvelAPI.make_request', response.status_code)    
+        return response

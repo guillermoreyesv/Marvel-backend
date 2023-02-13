@@ -106,15 +106,16 @@ class User():
         from application import app
 
         results = None
+        user_collection = None
 
         if not token:
-            return results
+            return results, user_collection
 
         start_with_bearer = token.startswith('Bearer ')
 
         if not start_with_bearer:
             app.logger.error(f'User.ManageUser.get.bearer_token {token}')
-            return results
+            return results, user_collection
 
         token = token[7:]
 
@@ -130,4 +131,4 @@ class User():
         if not results:
             app.logger.error(f'User.ManageUser.get.mongo_error {token}')
 
-        return results
+        return results, user_collection
