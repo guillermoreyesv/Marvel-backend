@@ -12,7 +12,7 @@ class ManageUser(MethodView):
         authorization = request.headers.get('Authorization')
 
         # Validate Token
-        info_user = User.validate_token(authorization)
+        info_user, user_collection = User.validate_token(authorization)
         if info_user is None:
             response = {
                 'code': 401,
